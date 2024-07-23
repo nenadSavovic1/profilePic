@@ -83,7 +83,8 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        width: 100%;
+        width: 70%;
+        margin-bottom: 20px;
       }
 
       input[type="file"] {
@@ -200,8 +201,8 @@
 
       .language-button {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 20px;
+        right: 100px;
         padding: 10px;
         background-color: #4caf50;
         color: white;
@@ -236,13 +237,13 @@
       }
 
       .loading-indicator {
-        border: 16px solid #f3f3f3; /* Light grey */
-        border-top: 16px solid #45a049; /* Blue */
+        border: 16px solid #f3f3f3;
+        border-top: 16px solid #45a049; 
         border-radius: 50%;
         width: 120px;
         height: 120px;
         animation: spin 2s linear infinite;
-        display: none; /* Hidden by default */
+        display: none; 
         position: absolute;
         top: 50%;
         left: 50%;
@@ -403,7 +404,7 @@
           profileImage.style.display = "block";
           overlay.style.display = "block";
           processBtn.style.display = "block";
-          profileImage.style.maxHeight = "300px";
+          // profileImage.style.maxHeight = "300px";
           removeFileIcon.style.display = "inline-block";
           exampleTutorial.style.display = "none";
         };
@@ -510,7 +511,6 @@
           outputDiv.style.flexDirection = "column";
           outputDiv.classList.add("finished");
 
-          // Smooth scroll to the download button
           scrollToBottom();
         } catch (error) {
           console.error("Error processing image:", error);
@@ -530,22 +530,21 @@
         const link = document.createElement("a");
         link.href = url;
         link.download = "profile_with_overlay.png";
-        link.style.display = "none"; // Hide the link
-        document.body.appendChild(link); // Append the link to the document
+        link.style.display = "none";
+        document.body.appendChild(link); 
         link.click();
-        document.body.removeChild(link); // Remove the link after clicking
-        URL.revokeObjectURL(url); // Release the object URL
+        document.body.removeChild(link); 
+        URL.revokeObjectURL(url); 
 
         // Add blur effect and reset UI
         document.body.classList.add("blur");
         setTimeout(() => {
           resetUI();
-          exampleTutorial.style.display = "flex"; // Show example tutorial div again
+          exampleTutorial.style.display = "flex"; 
           document.body.classList.remove("blur");
         }, 1000);
       });
 
-      // Set the default language to Serbian
       setLanguage("SRB");
     </script>
   </body>
