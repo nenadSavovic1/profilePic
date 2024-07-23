@@ -1,26 +1,38 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const sharp = require("sharp");
-const fetchImage = require("./fetchImage"); // Update the path if necessary
+const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME
+    ? process.env.CLOUDINARY_CLOUD_NAME
+    : "dwbhswbiz",
+  api_key: process.env.CLOUDINARY_API_KEY
+    ? process.env.CLOUDINARY_API_KEY
+    : "792749484157584",
+  api_secret: process.env.CLOUDINARY_API_SECRET
+    ? process.env.CLOUDINARY_API_SECRET
+    : "6_reYo3Wica1s1N1GMsVALYHzBo",
+});
 
 const app = express();
-const upload = multer({ dest: "uploads/" });
+
+// Configure multer to store files in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 app.use(express.static("public"));
 
 app.post("/upload", upload.single("profile"), async (req, res) => {
-  const filePath = req.file.path;
   const overlayPath = path.join(__dirname, "public", "overlay.png");
-  const outputPath = path.join(
-    __dirname,
-    "uploads",
-    "profile_with_overlay.png"
-  );
 
   try {
-    const profileMetadata = await sharp(filePath).metadata();
+    const profileBuffer = req.file.buffer;
+    const profileMetadata = await sharp(profileBuffer).metadata();
+
     const overlayBuffer = await sharp(overlayPath)
       .resize({
         width: profileMetadata.width,
@@ -29,22 +41,29 @@ app.post("/upload", upload.single("profile"), async (req, res) => {
       })
       .toBuffer();
 
-    await sharp(filePath)
+    const finalImage = await sharp(profileBuffer)
       .resize({
         width: profileMetadata.width,
         height: profileMetadata.height,
         fit: "inside",
       })
       .composite([{ input: overlayBuffer, blend: "over" }])
-      .toFile(outputPath);
+      .toBuffer();
 
-    res.download(outputPath, "profile_with_overlay.png", (err) => {
-      if (err) {
-        return res.status(500).send("Error downloading image");
+    // Upload the final image to Cloudinary
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "uploads", format: "png" },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          return res.status(500).send("Cloudinary upload failed");
+        }
+        console.log("Uploaded image URL:", result.secure_url); // Log the URL
+        res.send({ imageUrl: result.secure_url });
       }
-      fs.unlinkSync(filePath);
-      fs.unlinkSync(outputPath);
-    });
+    );
+
+    streamifier.createReadStream(finalImage).pipe(uploadStream);
   } catch (error) {
     console.error("Error processing image:", error);
     res.status(500).send("Error processing image");
@@ -66,6 +85,23 @@ app.get("/proxy", async (req, res) => {
     res.status(500).send("Error fetching image");
   }
 });
+
+async function fetchImage(url) {
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+  const page = await browser.newPage();
+
+  try {
+    await page.goto(url, { waitUntil: "networkidle2" });
+    const imageBuffer = await page.screenshot();
+    await browser.close();
+    return imageBuffer;
+  } catch (error) {
+    await browser.close();
+    throw error;
+  }
+}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

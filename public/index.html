@@ -68,16 +68,12 @@
         flex-direction: column;
         max-width: 600px;
         width: 100%;
+        margin: 20px;
       }
 
       h1 {
         margin-bottom: 10px;
         color: green;
-        font-size: 1.5rem;
-      }
-
-      h2 {
-        font-size: 1.2rem;
       }
 
       .input-container,
@@ -88,7 +84,6 @@
         align-items: center;
         gap: 10px;
         width: 100%;
-        margin-bottom: 25px;
       }
 
       input[type="file"] {
@@ -100,7 +95,6 @@
         border: 1px solid #ccc;
         border-radius: 5px;
         width: 100%;
-        max-width: 300px;
         box-sizing: border-box;
         cursor: pointer;
         text-align: center;
@@ -115,7 +109,7 @@
         color: white;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 16px;
       }
 
       .remove-file-icon {
@@ -125,22 +119,23 @@
         background: red;
         color: white;
         cursor: pointer;
-        font-size: 1rem;
-        line-height: 1rem;
-        width: 1rem;
-        height: 1rem;
+        font-size: 16px;
+        line-height: 16px;
+        width: 15px;
+        height: 15px;
         text-align: center;
-        margin-top: -24px;
-        margin-left: -12px;
+        margin-top: -32px;
+        margin-left: -20px;
+        cursor: pointer;
       }
 
       input[type="text"] {
-        padding: 10px;
+        padding: 15px;
         border: 1px solid #ccc;
         border-radius: 25px;
-        min-width: 400px;
+        width: 100%;
         box-sizing: border-box;
-        font-size: 1rem;
+        font-size: 16px;
       }
 
       button {
@@ -150,7 +145,7 @@
         background-color: #4caf50;
         color: white;
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 16px;
         margin-top: 10px;
       }
 
@@ -163,7 +158,7 @@
         color: white;
         border-radius: 5px;
         padding: 10px;
-        font-size: 1rem;
+        font-size: 16px;
       }
 
       #fetchBtn:disabled {
@@ -178,8 +173,8 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        align-items: center;
         width: 100%;
+        max-width: 600px;
       }
 
       #profileImage,
@@ -195,7 +190,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.1);
+        background: rgba(0, 0, 0, 0.5);
         display: none;
       }
 
@@ -225,53 +220,42 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: center;
         flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
       }
 
       .example {
-        width: 45%;
-        max-width: 200px;
-        height: auto;
+        width: 150px;
+        height: 150px;
         margin: 10px;
       }
-
       .arrow {
         font-size: 62px;
-        margin: 10px;
         font-weight: bolder;
       }
 
-      @media (max-width: 600px) {
-        h1 {
-          font-size: 1.2rem;
-        }
+      #loader {
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #45a049; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -60px 0 0 -60px;
+        z-index: 999;
+        display: none; /* Hidden by default */
+      }
 
-        h2 {
-          font-size: 1rem;
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-
-        #fileName {
-          font-size: 0.9rem;
-        }
-
-        input[type="text"] {
-          font-size: 0.9rem;
-        }
-
-        button,
-        #fetchBtn {
-          font-size: 0.9rem;
-          padding: 8px 16px;
-        }
-
-        .arrow {
-          font-size: 42px;
-        }
-
-        .example {
-          width: 80%;
-          max-width: 150px;
+        100% {
+          transform: rotate(360deg);
         }
       }
     </style>
@@ -321,6 +305,7 @@
         <button id="downloadBtn">Sačuvaj fotografiju na svoj računar</button>
       </div>
     </div>
+    <div id="loader"></div>
     <button class="language-button" id="languageBtn">EN</button>
 
     <script>
@@ -337,6 +322,7 @@
       const languageBtn = document.getElementById("languageBtn");
       const removeFileIcon = document.getElementById("removeFileIcon");
       const exampleTutorial = document.getElementById("example-tutorial");
+      const loader = document.getElementById("loader");
 
       const textElements = {
         title: document.getElementById("title"),
@@ -496,6 +482,7 @@
 
       processBtn.addEventListener("click", async () => {
         try {
+          loader.style.display = "block"; // Show loader
           const formData = new FormData();
           const file = uploadInput.files[0];
 
@@ -516,9 +503,8 @@
             throw new Error("Failed to process image.");
           }
 
-          const blob = await response.blob();
-          const url = URL.createObjectURL(blob);
-          processedImage.src = url;
+          const { imageUrl } = await response.json();
+          processedImage.src = imageUrl;
           processedImage.style.display = "block";
           outputDiv.style.display = "flex";
           outputDiv.style.flexDirection = "column";
@@ -531,27 +517,24 @@
           alert(
             "An error occurred while processing the image. Please try again."
           );
+        } finally {
+          loader.style.display = "none"; // Hide loader
         }
       });
 
-      downloadBtn.addEventListener("click", () => {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        // Ensure the canvas is the same size as the image
-        canvas.width = processedImage.naturalWidth;
-        canvas.height = processedImage.naturalHeight;
-
-        // Draw the image onto the canvas
-        context.drawImage(processedImage, 0, 0);
-
-        // Convert the canvas to a JPEG data URL
-        const jpegDataUrl = canvas.toDataURL("image/jpeg");
+      downloadBtn.addEventListener("click", async () => {
+        const response = await fetch(processedImage.src);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
 
         const link = document.createElement("a");
-        link.download = "profile_with_overlay.jpg";
-        link.href = jpegDataUrl;
+        link.href = url;
+        link.download = "profile_with_overlay.png";
+        link.style.display = "none"; // Hide the link
+        document.body.appendChild(link); // Append the link to the document
         link.click();
+        document.body.removeChild(link); // Remove the link after clicking
+        URL.revokeObjectURL(url); // Release the object URL
 
         // Add blur effect and reset UI
         document.body.classList.add("blur");
