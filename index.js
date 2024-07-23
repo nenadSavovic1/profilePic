@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
-const puppeteer = require("puppeteer");
+const fetchImage = require("./fetchImage"); // Update the path if necessary
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
@@ -66,21 +66,6 @@ app.get("/proxy", async (req, res) => {
     res.status(500).send("Error fetching image");
   }
 });
-
-async function fetchImage(url) {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-
-  try {
-    await page.goto(url, { waitUntil: "networkidle2" });
-    const imageBuffer = await page.screenshot();
-    await browser.close();
-    return imageBuffer;
-  } catch (error) {
-    await browser.close();
-    throw error;
-  }
-}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
