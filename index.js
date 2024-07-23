@@ -4,27 +4,27 @@ const sharp = require("sharp");
 const path = require("path");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
+const puppeteer = require("puppeteer");
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME
-    ? process.env.CLOUDINARY_CLOUD_NAME
-    : "dwbhswbiz",
-  api_key: process.env.CLOUDINARY_API_KEY
-    ? process.env.CLOUDINARY_API_KEY
-    : "792749484157584",
-  api_secret: process.env.CLOUDINARY_API_SECRET
-    ? process.env.CLOUDINARY_API_SECRET
-    : "6_reYo3Wica1s1N1GMsVALYHzBo",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "dwbhswbiz",
+  api_key: process.env.CLOUDINARY_API_KEY || "792749484157584",
+  api_secret: process.env.CLOUDINARY_API_SECRET || "6_reYo3Wica1s1N1GMsVALYHzBo",
 });
 
 const app = express();
+
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Configure multer to store files in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-app.use(express.static("public"));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.post("/upload", upload.single("profile"), async (req, res) => {
   const overlayPath = path.join(__dirname, "public", "overlay.png");
