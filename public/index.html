@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="sr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🇷🇸 Marš iz Srbije Rio Tinto</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        background: #f0f0f0;
+        background-image: url("jadar.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        transition: filter 0.3s ease;
+      }
+
+      body.blur {
+        filter: blur(5px);
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 20%;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      body::before {
+        top: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(240, 240, 240, 1),
+          rgba(240, 240, 240, 0)
+        );
+      }
+
+      body::after {
+        bottom: 0;
+        background: linear-gradient(
+          to top,
+          rgba(240, 240, 240, 1),
+          rgba(240, 240, 240, 0)
+        );
+      }
+
+      .text-container {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        color: green;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+        color: green;
+      }
+
+      .input-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .file-upload-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .file-name-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .url-input-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .custom-file-upload {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 300px;
+        max-width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
+        text-align: center;
+        background-color: white;
+      }
+
+      #fileName {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 5px;
+        background: linear-gradient(to right, #4caf50, #45a049);
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .remove-file-icon {
+        display: inline-block;
+        padding: 3px;
+        border-radius: 50%;
+        background: red;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 16px;
+        width: 15px;
+        height: 15px;
+        text-align: center;
+        margin-top: -32px;
+        margin-left: -20px;
+        cursor: pointer;
+      }
+
+      input[type="text"] {
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 25px;
+        width: 390px;
+        max-width: 100%;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4caf50;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      #fetchBtn {
+        background-color: #4caf50;
+        color: white;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 16px;
+      }
+
+      #fetchBtn:disabled {
+        background-color: #6f6f6f;
+        cursor: not-allowed;
+      }
+
+      #preview,
+      #output {
+        margin-top: 20px;
+        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #profileImage,
+      #processedImage {
+        max-width: 100%;
+        height: auto;
+        display: none;
+      }
+
+      #overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+      }
+
+      #output {
+        display: none;
+      }
+
+      .language-button {
+        position: absolute;
+        top: 10px;
+        right: 100px;
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 222;
+      }
+
+      .language-button:hover {
+        background-color: #45a049;
+      }
+
+      #example-tutorial {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .example {
+        width: 200px;
+        height: 200px;
+        margin-right: 30px;
+      }
+      .arrow {
+        font-size: 62px;
+        margin: 100px 19px;
+        font-weight: bolder;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="text-container">
+      <h1 id="title">
+        Brzo i lako izmeni svoju profilnu sliku i pokaži svima šta misliš o
+        rudarenju litijuma u Srbiji i kompaniji RioTinto
+      </h1>
+      <h2 id="addImage">Dodaj</h2>
+      <div class="file-upload-container">
+        <label class="custom-file-upload">
+          <input type="file" id="upload" accept="image/*" />
+          <div class="file-name-container">
+            <span id="fileName">Niste upload-ovali fotografiju</span>
+            <span
+              class="remove-file-icon"
+              id="removeFileIcon"
+              style="display: none"
+              >&times;</span
+            >
+          </div>
+        </label>
+      </div>
+      <div class="url-input-container">
+        <input
+          type="text"
+          id="imageUrl"
+          placeholder="Kopiraj URL (Link) od tvoje profilne fotografije"
+        />
+        <button id="fetchBtn" disabled>Fetch Image</button>
+      </div>
+      <div id="example-tutorial">
+        <img alt="example" class="example" src="./example.jpg" />
+        <div class="arrow">&#8594;</div>
+        <img alt="example" class="example" src="./exampleWithOverlay.png" />
+      </div>
+      <div id="preview">
+        <img id="profileImage" src="" alt="Profile Image" />
+        <div id="overlay"></div>
+      </div>
+      <button id="processBtn" style="display: none">Dodaj žig</button>
+      <div id="output">
+        <h2 id="previewText">Preview of Processed Image:</h2>
+        <img id="processedImage" src="" alt="Processed Image" />
+        <button id="downloadBtn">Sačuvaj fotografiju na svoj računar</button>
+      </div>
+    </div>
+    <button class="language-button" id="languageBtn">EN</button>
+
+    <script>
+      const uploadInput = document.getElementById("upload");
+      const imageUrlInput = document.getElementById("imageUrl");
+      const fetchBtn = document.getElementById("fetchBtn");
+      const profileImage = document.getElementById("profileImage");
+      const overlay = document.getElementById("overlay");
+      const processBtn = document.getElementById("processBtn");
+      const outputDiv = document.getElementById("output");
+      const processedImage = document.getElementById("processedImage");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const fileName = document.getElementById("fileName");
+      const languageBtn = document.getElementById("languageBtn");
+      const removeFileIcon = document.getElementById("removeFileIcon");
+      const exampleTutorial = document.getElementById("example-tutorial");
+
+      const textElements = {
+        title: document.getElementById("title"),
+        addImage: document.getElementById("addImage"),
+        fetchBtn: fetchBtn,
+        previewText: document.getElementById("previewText"),
+        downloadBtn: downloadBtn,
+        fileName: fileName,
+        imageUrl: imageUrlInput,
+        processBtn: processBtn,
+      };
+
+      function scrollToBottom() {
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 500);
+      }
+
+      const languages = {
+        SRB: {
+          title:
+            "Brzo i lako izmeni svoju profilnu sliku i pokaži svima šta misliš o rudarenju litijuma u Srbiji i kompaniji RioTinto",
+          addImage: "RIO TINTO MARŠ IZ SRBIJE!!! 🇷🇸🇷🇸🇷🇸",
+          fetchBtn: "Dohvati fotografiju",
+          previewText: "Profilna fotografija nakon izmena:",
+          downloadBtn: "Sačuvaj fotografiju na svoj računar",
+          fileName: "Klikni da upload-uješ fotografiju",
+          imageUrl: "Kopiraj URL (Link) od tvoje profilne fotografije",
+          languageBtn: "EN",
+          processBtn: "Dodaj žig",
+          errorMessage:
+            "Izgleda da aplikacija gde se nalazi vaša profilna slika ne dozvoljava pristup. Najbolje da sa vašeg računara uplaod-ujete fotografiju i dodate žig",
+        },
+        EN: {
+          title:
+            "Quickly and easily change your profile picture and show everyone what you think about lithium mining in Serbia and the company RioTinto",
+          addImage: "RIO TINTO LEAVE SERBIA!!!  🇷🇸🇷🇸🇷🇸",
+          fetchBtn: "Fetch Image",
+          previewText: "Preview of Processed Image:",
+          downloadBtn: "Save the image to your computer",
+          fileName: "No file selected",
+          imageUrl: "Paste the URL (Link) of your profile picture",
+          languageBtn: "SRB",
+          processBtn: "Add overlay",
+          errorMessage:
+            "The hosting website does not allow image fetching. Please try a different URL.",
+        },
+      };
+
+      let currentLanguage = "SRB";
+
+      function setLanguage(language) {
+        currentLanguage = language;
+        Object.keys(textElements).forEach((key) => {
+          if (key === "imageUrl") {
+            textElements[key].placeholder = languages[language][key];
+          } else {
+            textElements[key].textContent = languages[language][key];
+          }
+        });
+        languageBtn.textContent = languages[language].languageBtn;
+      }
+
+      languageBtn.addEventListener("click", () => {
+        const newLanguage = currentLanguage === "SRB" ? "EN" : "SRB";
+        setLanguage(newLanguage);
+      });
+
+      imageUrlInput.addEventListener("input", () => {
+        fetchBtn.disabled = !imageUrlInput.value.trim();
+      });
+
+      function displayImage(src) {
+        profileImage.onload = () => {
+          profileImage.style.display = "block";
+          overlay.style.display = "block";
+          processBtn.style.display = "block";
+          profileImage.style.maxHeight = "300px";
+          removeFileIcon.style.display = "inline-block";
+          exampleTutorial.style.display = "none";
+        };
+        profileImage.src = src;
+      }
+
+      function removeImage(event) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        // Clear the uploaded file
+        uploadInput.value = "";
+
+        profileImage.style.display = "none";
+        overlay.style.display = "none";
+        processBtn.style.display = "none";
+        profileImage.src = "";
+        fileName.textContent = languages[currentLanguage].fileName;
+        imageUrlInput.value = "";
+        fetchBtn.disabled = true;
+        removeFileIcon.style.display = "none";
+        exampleTutorial.style.display = "flex";
+      }
+
+      function resetUI() {
+        removeImage();
+        processedImage.style.display = "none";
+        outputDiv.style.display = "none";
+      }
+
+      uploadInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          fileName.textContent = file.name;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            displayImage(e.target.result);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          fileName.textContent = languages[currentLanguage].fileName;
+        }
+      });
+
+      fetchBtn.addEventListener("click", () => {
+        const imageUrl = imageUrlInput.value;
+        if (imageUrl) {
+          fetch(
+            `/proxy?url=${encodeURIComponent(
+              imageUrl + "?cache-buster=" + new Date().getTime()
+            )}`
+          )
+            .then((response) => {
+              if (!response.ok) {
+                if (response.status === 403 || response.status === 500) {
+                  alert(languages[currentLanguage].errorMessage);
+                }
+                throw new Error(
+                  "Network response was not ok: " + response.statusText
+                );
+              }
+              return response.blob();
+            })
+            .then((blob) => {
+              const url = URL.createObjectURL(blob);
+              removeImage(); // Clear any previous images
+              displayImage(url);
+            })
+            .catch((error) => console.error("Error fetching image:", error));
+        }
+      });
+
+      removeFileIcon.addEventListener("click", removeImage);
+
+      processBtn.addEventListener("click", async () => {
+        try {
+          const formData = new FormData();
+          const file = uploadInput.files[0];
+
+          if (file) {
+            formData.append("profile", file);
+          } else {
+            const response = await fetch(profileImage.src);
+            const blob = await response.blob();
+            formData.append("profile", blob, "profile.png");
+          }
+
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to process image.");
+          }
+
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          processedImage.src = url;
+          processedImage.style.display = "block";
+          outputDiv.style.display = "flex";
+          outputDiv.style.flexDirection = "column";
+          outputDiv.classList.add("finished");
+
+          // Smooth scroll to the download button
+          scrollToBottom();
+        } catch (error) {
+          console.error("Error processing image:", error);
+          alert(
+            "An error occurred while processing the image. Please try again."
+          );
+        }
+      });
+
+      downloadBtn.addEventListener("click", () => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        // Ensure the canvas is the same size as the image
+        canvas.width = processedImage.naturalWidth;
+        canvas.height = processedImage.naturalHeight;
+
+        // Draw the image onto the canvas
+        context.drawImage(processedImage, 0, 0);
+
+        // Convert the canvas to a JPEG data URL
+        const jpegDataUrl = canvas.toDataURL("image/jpeg");
+
+        const link = document.createElement("a");
+        link.download = "profile_with_overlay.jpg";
+        link.href = jpegDataUrl;
+        link.click();
+
+        // Add blur effect and reset UI
+        document.body.classList.add("blur");
+        setTimeout(() => {
+          resetUI();
+          exampleTutorial.style.display = "flex"; // Show example tutorial div again
+          document.body.classList.remove("blur");
+        }, 1000);
+      });
+
+      // Set the default language to Serbian
+      setLanguage("SRB");
+    </script>
+  </body>
+</html>
