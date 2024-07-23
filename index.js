@@ -10,21 +10,23 @@ const puppeteer = require("puppeteer");
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "dwbhswbiz",
   api_key: process.env.CLOUDINARY_API_KEY || "792749484157584",
-  api_secret: process.env.CLOUDINARY_API_SECRET || "6_reYo3Wica1s1N1GMsVALYHzBo",
+  api_secret:
+    process.env.CLOUDINARY_API_SECRET || "6_reYo3Wica1s1N1GMsVALYHzBo",
 });
 
 const app = express();
 
 // Serve static files from the "public" directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
+
+// Serve the index.html file when the root URL is accessed
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Configure multer to store files in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 app.post("/upload", upload.single("profile"), async (req, res) => {
   const overlayPath = path.join(__dirname, "public", "overlay.png");
