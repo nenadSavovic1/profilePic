@@ -238,12 +238,12 @@
 
       .loading-indicator {
         border: 16px solid #f3f3f3;
-        border-top: 16px solid #45a049; 
+        border-top: 16px solid #45a049;
         border-radius: 50%;
         width: 120px;
         height: 120px;
         animation: spin 2s linear infinite;
-        display: none; 
+        display: none;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -535,20 +535,20 @@
         link.href = url;
         link.download = "profile_with_overlay.png";
         link.style.display = "none";
-        document.body.appendChild(link); 
+        document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link); 
-        URL.revokeObjectURL(url); 
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
 
         // Add blur effect and reset UI
         document.body.classList.add("blur");
         setTimeout(() => {
           resetUI();
-          exampleTutorial.style.display = "flex"; 
+          exampleTutorial.style.display = "flex";
           document.body.classList.remove("blur");
         }, 1000);
       });
-
+      //rand
       setLanguage("SRB");
     </script>
   </body>
