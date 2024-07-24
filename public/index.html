@@ -24,7 +24,7 @@
       }
 
       body.blur {
-        filter: blur(5px);
+        filter: blur(2px);
       }
 
       body::before,
@@ -231,6 +231,7 @@
         height: 150px;
         margin: 10px;
       }
+
       .arrow {
         font-size: 62px;
         font-weight: bolder;
@@ -244,7 +245,7 @@
         height: 120px;
         animation: spin 2s linear infinite;
         display: none;
-        position: absolute;
+        position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
@@ -325,6 +326,9 @@
       const exampleTutorial = document.getElementById("example-tutorial");
       const loadingIndicator = document.getElementById("loadingIndicator");
 
+      const MAX_FILE_SIZE = 10485760; // 10MB
+      const RESIZE_WIDTH = 1024; // Width to resize image to if it exceeds size limit
+
       const textElements = {
         title: document.getElementById("title"),
         addImage: document.getElementById("addImage"),
@@ -335,6 +339,10 @@
         imageUrl: imageUrlInput,
         processBtn: processBtn,
       };
+
+      function scrollToElement(element) {
+        element.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
 
       function scrollToBottom() {
         setTimeout(() => {
@@ -359,6 +367,8 @@
           processBtn: "Dodaj žig",
           errorMessage:
             "Izgleda da aplikacija gde se nalazi vaša profilna slika ne dozvoljava pristup. Najbolje da sa vašeg računara uplaod-ujete fotografiju i dodate žig",
+          fileTooLarge:
+            "Veličina fajla je prevelika. Molimo izaberite manji fajl ili sačekajte dok se automatski ne smanji.",
         },
         EN: {
           title:
@@ -373,6 +383,8 @@
           processBtn: "Add overlay",
           errorMessage:
             "The hosting website does not allow image fetching. Please try a different URL.",
+          fileTooLarge:
+            "File size too large. Please select a smaller file or wait for it to be resized automatically.",
         },
       };
 
@@ -404,9 +416,9 @@
           profileImage.style.display = "block";
           overlay.style.display = "block";
           processBtn.style.display = "block";
-          // profileImage.style.maxHeight = "300px";
           removeFileIcon.style.display = "inline-block";
           exampleTutorial.style.display = "none";
+          scrollToElement(processBtn);
         };
         profileImage.src = src;
       }
@@ -437,15 +449,68 @@
         outputDiv.style.display = "none";
       }
 
+      function resizeImage(file, callback) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            let width = img.width;
+            let height = img.height;
+
+            // Calculate the new dimensions while maintaining the aspect ratio
+            if (width > RESIZE_WIDTH) {
+              height = Math.round((height * RESIZE_WIDTH) / width);
+              width = RESIZE_WIDTH;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+              (blob) => {
+                callback(blob);
+              },
+              file.type,
+              0.9
+            ); // Adjust quality here if needed
+          };
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function showLoading() {
+        loadingIndicator.style.display = "block";
+        document.body.classList.add("blur");
+      }
+
+      function hideLoading() {
+        loadingIndicator.style.display = "none";
+        document.body.classList.remove("blur");
+      }
+
       uploadInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file) {
-          fileName.textContent = file.name;
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            displayImage(e.target.result);
-          };
-          reader.readAsDataURL(file);
+          showLoading();
+          if (file.size > MAX_FILE_SIZE) {
+            alert(languages[currentLanguage].fileTooLarge);
+            resizeImage(file, (resizedBlob) => {
+              fileName.textContent = file.name;
+              displayImage(URL.createObjectURL(resizedBlob));
+              hideLoading();
+            });
+          } else {
+            fileName.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              displayImage(e.target.result);
+              hideLoading();
+            };
+            reader.readAsDataURL(file);
+          }
         } else {
           fileName.textContent = languages[currentLanguage].fileName;
         }
@@ -454,7 +519,7 @@
       fetchBtn.addEventListener("click", () => {
         const imageUrl = imageUrlInput.value;
         if (imageUrl) {
-          loadingIndicator.style.display = "block";
+          showLoading();
           fetch(
             `/proxy?url=${encodeURIComponent(
               imageUrl + "?cache-buster=" + new Date().getTime()
@@ -477,26 +542,37 @@
               displayImage(url);
             })
             .catch((error) => console.error("Error fetching image:", error))
-            .finally(() => {
-              loadingIndicator.style.display = "none";
-            });
+            .finally(hideLoading);
         }
       });
 
       removeFileIcon.addEventListener("click", removeImage);
 
       processBtn.addEventListener("click", async () => {
-        loadingIndicator.style.display = "block";
+        showLoading();
         try {
           const formData = new FormData();
           const file = uploadInput.files[0];
 
+          const appendFile = async (file) => {
+            if (file.size > MAX_FILE_SIZE) {
+              return new Promise((resolve) => {
+                resizeImage(file, (resizedBlob) => {
+                  formData.append("profile", resizedBlob, file.name);
+                  resolve();
+                });
+              });
+            } else {
+              formData.append("profile", file);
+            }
+          };
+
           if (file) {
-            formData.append("profile", file);
+            await appendFile(file);
           } else {
             const response = await fetch(profileImage.src);
             const blob = await response.blob();
-            formData.append("profile", blob, "profile.png");
+            await appendFile(blob);
           }
 
           const response = await fetch("/upload", {
@@ -522,7 +598,7 @@
             "An error occurred while processing the image. Please try again."
           );
         } finally {
-          loadingIndicator.style.display = "none";
+          hideLoading();
         }
       });
 
@@ -548,7 +624,7 @@
           document.body.classList.remove("blur");
         }, 1000);
       });
-      //rand
+
       setLanguage("SRB");
     </script>
   </body>
