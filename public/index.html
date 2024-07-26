@@ -384,6 +384,8 @@
             "Izgleda da aplikacija gde se nalazi vaša profilna slika ne dozvoljava pristup. Najbolje da sa vašeg računara uplaod-ujete fotografiju i dodate žig",
           fileTooLarge:
             "Veličina fajla je prevelika. Molimo izaberite manji fajl ili sačekajte dok se automatski ne smanji. v2.0",
+          processError:
+            "Slika je prevelika, probajte da postavite sliku (fajl) koja je manje veličine. Takođe aplikacija radi najbolje na računaru",
         },
         EN: {
           title:
@@ -400,6 +402,8 @@
             "The hosting website does not allow image fetching. Please try a different URL.",
           fileTooLarge:
             "File size too large. Please select a smaller file or wait for it to be resized automatically.",
+          processError:
+            "The image is too large, please try to upload a smaller image (file). Additionally, the application works best on a desktop computer.",
         },
       };
 
@@ -540,7 +544,7 @@
             }
           } catch (error) {
             console.error("Error handling file:", error);
-            alert("An error occurred while processing the file. Please try again. v2.0");
+            alert(alert(languages[currentLanguage].processError));
             hideLoading();
           }
         } else {
