@@ -16,6 +16,13 @@ cloudinary.config({
 
 const app = express();
 
+// Increase timeout setting
+app.use((req, res, next) => {
+  req.setTimeout(300000); // 5 minutes
+  res.setTimeout(300000); // 5 minutes
+  next();
+});
+
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -95,7 +102,7 @@ async function fetchImage(url) {
   const page = await browser.newPage();
 
   try {
-    await page.goto(url, { waitUntil: "networkidle2" });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 300000 });
     const imageBuffer = await page.screenshot();
     await browser.close();
     return imageBuffer;
