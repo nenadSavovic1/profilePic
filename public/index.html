@@ -246,8 +246,8 @@
         animation: spin 2s linear infinite;
         display: none;
         position: fixed;
-        top: 50%;
-        left: 50%;
+        top: 45%;
+        left: 43%;
         transform: translate(-50%, -50%);
         z-index: 3;
       }
@@ -258,6 +258,21 @@
         }
         100% {
           transform: rotate(360deg);
+        }
+      }
+      /* Mobile devices in portrait orientation */
+      @media only screen and (max-width: 767px) and (orientation: portrait) {
+        .loading-indicator {
+          top: 22%;
+          left: 33%;
+        }
+      }
+
+      /* Mobile devices in landscape orientation */
+      @media only screen and (max-width: 767px) and (orientation: landscape) {
+        .loading-indicator {
+          top: 25%;
+          left: 43%;
         }
       }
     </style>
@@ -368,7 +383,7 @@
           errorMessage:
             "Izgleda da aplikacija gde se nalazi vaša profilna slika ne dozvoljava pristup. Najbolje da sa vašeg računara uplaod-ujete fotografiju i dodate žig",
           fileTooLarge:
-            "Veličina fajla je prevelika. Molimo izaberite manji fajl ili sačekajte dok se automatski ne smanji.",
+            "Veličina fajla je prevelika. Molimo izaberite manji fajl ili sačekajte dok se automatski ne smanji. v2.0",
         },
         EN: {
           title:
