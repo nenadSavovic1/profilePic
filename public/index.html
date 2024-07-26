@@ -472,13 +472,24 @@
           img.onload = () => {
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
+
+            const MAX_WIDTH = 1024;
+            const MAX_HEIGHT = 1024;
+
             let width = img.width;
             let height = img.height;
 
             // Calculate the new dimensions while maintaining the aspect ratio
-            if (width > RESIZE_WIDTH) {
-              height = Math.round((height * RESIZE_WIDTH) / width);
-              width = RESIZE_WIDTH;
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
             }
 
             canvas.width = width;
@@ -510,21 +521,27 @@
         const file = event.target.files[0];
         if (file) {
           showLoading();
-          if (file.size > MAX_FILE_SIZE) {
-            alert(languages[currentLanguage].fileTooLarge);
-            resizeImage(file, (resizedBlob) => {
+          try {
+            if (file.size > MAX_FILE_SIZE) {
+              alert(languages[currentLanguage].fileTooLarge);
+              resizeImage(file, (resizedBlob) => {
+                fileName.textContent = file.name;
+                displayImage(URL.createObjectURL(resizedBlob));
+                hideLoading();
+              });
+            } else {
               fileName.textContent = file.name;
-              displayImage(URL.createObjectURL(resizedBlob));
-              hideLoading();
-            });
-          } else {
-            fileName.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              displayImage(e.target.result);
-              hideLoading();
-            };
-            reader.readAsDataURL(file);
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                displayImage(e.target.result);
+                hideLoading();
+              };
+              reader.readAsDataURL(file);
+            }
+          } catch (error) {
+            console.error("Error handling file:", error);
+            alert("An error occurred while processing the file. Please try again. v2.0");
+            hideLoading();
           }
         } else {
           fileName.textContent = languages[currentLanguage].fileName;
